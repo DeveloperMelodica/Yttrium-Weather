@@ -7,6 +7,7 @@ const searchBtn = document.getElementById('search');
 const locateBtn = document.getElementById('locate');
 const weatherDiv = document.getElementById('weather');
 const dateInput = document.getElementById('date');
+const locationInfo = document.getElementById('location-info');
 
 const today = new Date().toISOString().split('T')[0];
 dateInput.value = today;
@@ -21,30 +22,35 @@ dateInput.addEventListener('change', () => {
     if (cityInput.value.trim()) getWeather();
 });
 
+getUserLocation();
+
 async function getUserLocation() {
     if (!navigator.geolocation) {
-        showError('Geolocation not supported');
+        locationInfo.textContent = 'Geolocation not supported';
         return;
     }
 
     locateBtn.disabled = true;
-    locateBtn.textContent = '⌛';
+    locateBtn.textContent = '⌛ Detecting...';
+    locationInfo.textContent = 'Detecting your location...';
 
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             try {
                 await getWeatherByCoords(position.coords.latitude, position.coords.longitude);
             } catch (error) {
+                locationInfo.textContent = 'Location detection failed';
                 showError(error.message);
             } finally {
                 locateBtn.disabled = false;
-                locateBtn.textContent = '📍';
+                locateBtn.textContent = '🔄 Refresh Location';
             }
         },
         (error) => {
+            locationInfo.textContent = 'Location access denied';
             showError('Location access denied');
             locateBtn.disabled = false;
-            locateBtn.textContent = '📍';
+            locateBtn.textContent = '🔄 Refresh Location';
         }
     );
 }
@@ -53,11 +59,15 @@ async function getWeatherByCoords(lat, lon) {
     const selectedDate = dateInput.value;
     
     try {
-        const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`);
-        const geoData = await geoResponse.json();
+        const reverseGeoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+        const reverseGeoResponse = await fetch(reverseGeoUrl);
+        const reverseGeoData = await reverseGeoResponse.json();
         
-        const locationName = geoData.results?.[0]?.name || 'Your Location';
+        const locationName = reverseGeoData.city || reverseGeoData.locality || reverseGeoData.principalSubdivision || 'Unknown Location';
+        const country = reverseGeoData.countryName || '';
+        
         cityInput.value = locationName;
+        locationInfo.innerHTML = `<strong>📍 ${locationName}</strong>${country ? '<br><small>' + country + '</small>' : ''}`;
         
         const isHistorical = new Date(selectedDate) < new Date(today);
         const apiUrl = isHistorical ? HISTORICAL_URL : WEATHER_URL;
@@ -69,7 +79,7 @@ async function getWeatherByCoords(lat, lon) {
         
         const location = {
             name: locationName,
-            country: geoData.results?.[0]?.country || ''
+            country: country
         };
         
         displayWeather(location, weatherData.daily, selectedDate);
