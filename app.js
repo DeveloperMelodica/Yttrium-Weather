@@ -98,7 +98,8 @@ async function getWeather() {
     }
 
     try {
-        const geoResponse = await fetch(`${GEOCODING_URL}?name=${city}&count=1&language=en&format=json`);
+        const encodedCity = encodeURIComponent(city);
+        const geoResponse = await fetch(`${GEOCODING_URL}?name=${encodedCity}&count=1&language=en&format=json`);
         const geoData = await geoResponse.json();
         
         if (!geoData.results || geoData.results.length === 0) {
