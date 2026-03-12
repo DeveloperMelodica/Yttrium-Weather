@@ -67,7 +67,8 @@ const NAME_REDIRECTS = {
     'upper volta': 'Burkina Faso', 'kampuchea': 'Cambodia', 'dutch guiana': 'Suriname',
     'british honduras': 'Belize', 'nyasaland': 'Malawi', 'tanganyika': 'Tanzania',
     'abyssinia': 'Ethiopia', 'zaire': 'Democratic Republic of the Congo', 'dahomey': 'Benin',
-    'ubangi-shari': 'Central African Republic', 'bechuanaland': 'Botswana'
+    'ubangi-shari': 'Central African Republic', 'bechuanaland': 'Botswana',
+    'western sahara': 'Laayoune', 'sahrawi arab democratic republic': 'Laayoune'
 };
 
 const cityInput = document.getElementById('city');
@@ -245,7 +246,9 @@ function showDisambiguation(results, selectedDate) {
                 name: option.dataset.name,
                 country: option.dataset.country
             };
-            cityInput.value = `${location.name}, ${location.country}`;
+            // Avoid duplicate if location name equals country (e.g., "Germany, Germany")
+            const isDuplicate = location.name === location.country;
+            cityInput.value = isDuplicate ? location.name : `${location.name}, ${location.country}`;
             currentCity = cityInput.value;
             fetchWeatherForLocation(location, selectedDate);
         });
