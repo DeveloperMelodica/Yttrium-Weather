@@ -132,7 +132,9 @@ function showDisambiguation(results, selectedDate) {
     }
     
     const options = uniqueResults.map(loc => {
-        const admin = loc.admin1 ? `, ${loc.admin1}` : '';
+        // Handle undefined, null, or string "undefined" for admin1
+        const hasAdmin = loc.admin1 && loc.admin1 !== 'undefined' && loc.admin1.trim() !== '';
+        const admin = hasAdmin ? `, ${loc.admin1}` : '';
         const pop = loc.population ? ` (${(loc.population / 1000).toFixed(0)}k)` : '';
         return `<div class="location-option" data-lat="${loc.latitude}" data-lon="${loc.longitude}" data-name="${loc.name}" data-country="${loc.country}">
             📍 ${loc.name}${admin}, ${loc.country}${pop}
