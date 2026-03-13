@@ -1,6 +1,6 @@
 # Yttrium Weather
 
-Minimalistic weather website using Open-Meteo API (free, no API key required).
+Minimalistic weather website/app using Open-Meteo API (free, no API key required).
 
 ## Setup
 
